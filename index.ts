@@ -1,6 +1,6 @@
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
-import { gql } from "graphql-tag";
+import { loadFiles } from "@graphql-tools/load-files";
 
 const users = [
   {
@@ -9,6 +9,8 @@ const users = [
     email: "email@email.com",
     salario: 1304.5,
     vip: false,
+    status: "ATIVO",
+    id_perfil: 1,
   },
   {
     id: 2,
@@ -16,6 +18,8 @@ const users = [
     email: "joao@email.com",
     salario: 11304.5,
     vip: false,
+    status: "BLOQUEADO",
+    id_perfil: 2,
   },
   {
     id: 3,
@@ -23,6 +27,8 @@ const users = [
     email: "maria@email.com",
     salario: 2304.5,
     vip: true,
+    status: "INATIVO",
+    id_perfil: 3,
   },
 ];
 
@@ -31,43 +37,14 @@ const perfis = [
   { id: 2, nome: "admin" },
 ];
 
-const typeDefs = gql`
-  scalar Data
-
-  type Query {
-    ola: String!
-    horaAtual: String
-    dataAtual: Data
-    melhorUsuario: Usuario!
-    melhorProduto: Produto
-    numerosMegaSena: [Int!]!
-    usuarios: [Usuario]!
-    usuario(id: Int): Usuario
-    perfis: [Perfil]!
-    perfil(id: Int): Perfil
-  }
-
-  type Perfil {
-    id: Int
-    nome: String
-  }
-
-  type Usuario {
-    id: Int
-    nome: String
-    email: String
-    salario: Float
-    vip: Boolean
-  }
-
-  type Produto {
-    id: Int
-    nome: String
-    preco: Float
-    descont: Float
-    precoComDesconto: Float
-  }
-`;
+type Usuario = {
+  id: Number;
+  nome_completo: String;
+  email: String;
+  salario: Number;
+  vip: Boolean;
+  id_perfil: Number;
+};
 
 const resolvers = {
   Query: {
@@ -120,8 +97,11 @@ const resolvers = {
   },
 
   Usuario: {
-    nome(usuario: any) {
+    nome(usuario: Usuario) {
       return usuario.nome_completo;
+    },
+    perfil(usuario: Usuario) {
+      return perfis.find((perfil) => perfil.id === usuario.id_perfil);
     },
   },
 
@@ -132,7 +112,10 @@ const resolvers = {
   },
 };
 
-const server = new ApolloServer({ typeDefs, resolvers });
+const server = new ApolloServer({
+  typeDefs: await loadFiles("./schema/*.graphql"),
+  resolvers,
+});
 
 const { url } = await startStandaloneServer(server, {
   listen: { port: +process.env.PORT! },
