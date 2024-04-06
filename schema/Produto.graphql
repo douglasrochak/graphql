@@ -2,6 +2,6 @@ type Produto {
   id: Int
   nome: String
   preco: Float
-  descont: Float
+  desconto: Float
   precoComDesconto: Float
 }
