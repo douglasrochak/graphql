@@ -1,0 +1,4 @@
+type Mutation {
+  criarUsuario(nome: String, email: String, salario: Float): Usuario
+  excluirUsuario(id: Int): Usuario
+}
